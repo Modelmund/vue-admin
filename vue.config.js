@@ -20,14 +20,19 @@ module.exports = {
     },
     configureWebpack: (config) => {
         // console.log(config)
-        // config.resolve = {
-        //     extensions: ['.js', '.json', 'vue'],
-        //     alias: {
-        //         'vue': 'vue/dist/vue.js',
-        //         '@': path.resolve(__dirname, './src'),
-        //         '@c': path.resolve(__dirname, './src/components')
-        //     }
-        // }
+        config.resolve = {
+            extensions: ['.js', '.json', 'vue'],
+            alias: {
+                // 'vue': 'vue/dist/vue.js',
+                '@': path.resolve(__dirname, './src'),
+                'public': path.resolve(__dirname, './public'),
+                '@c': path.resolve(__dirname, './src/components'),
+                // 'common': path.resolve(__dirname, './src/common'),
+                // 'api': path.resolve(__dirname, './src/api'),
+                'views': path.resolve(__dirname, './src/views'),
+                // 'data': path.resolve(__dirname, './src/data')
+            }
+        }
     },
     //生产环境是否配置sourceMap文件
     productionSourceMap: false,
@@ -36,11 +41,13 @@ module.exports = {
         extract: true,
         sourceMap: false,
         loaderOptions: {
-            sass: {
+            scss: {
                 prependData: `@import "./src/styles/main.scss";`
             }
         },
-        requireModuleExtension: false
+        // 为什么会影响到elementui的默认样式了？
+        requireModuleExtension: true
+        // 等同于modules: false
     },
     //并行构建，对于babel和ts等，机器多核的情况下
     parallel: require('os').cpus.length > 1,
