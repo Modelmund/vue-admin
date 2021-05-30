@@ -58,7 +58,10 @@
               ><el-input v-model.number="ruleForm.captcha"></el-input>
             </el-col>
             <el-col :span="8"
-              ><el-button type="success" style="width: 100%; display: block"
+              ><el-button
+                type="success"
+                style="width: 100%; display: block"
+                @click="getCaptcha()"
                 >获取验证码</el-button
               >
             </el-col>
@@ -78,6 +81,7 @@
 </template>
 
 <script>
+import { getSms } from "@/api/login";
 import { reactive, ref, isRef, toRefs, onMounted } from "@vue/composition-api";
 import {
   stripScript,
@@ -158,6 +162,9 @@ export default {
     });
     const type = ref("login");
     // methods声明
+    /**
+     * 登录注册切换
+     */
     const toggleMenu = (item) => {
       //清除预设
       menuTabs.forEach((elem) => {
@@ -168,6 +175,18 @@ export default {
       //修改类型
       type.value = item.type;
     };
+    /**
+     * 获取验证码
+     */
+    const getCaptcha = () => {
+      let data = {
+        username: ruleForm.username,
+      };
+      getSms(data);
+    };
+    /**
+     * 表单提交
+     */
     const submitForm = (formName) => {
       context.refs[formName].validate((valid) => {
         if (valid) {
@@ -186,6 +205,7 @@ export default {
       type,
       toggleMenu,
       submitForm,
+      getCaptcha,
     };
   },
 };

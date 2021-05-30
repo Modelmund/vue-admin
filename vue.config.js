@@ -64,8 +64,8 @@ module.exports = {
         hot: true,
         hotOnly: false,
         proxy: {
-            "devApi": {
-                target: "http://www.web-jshtml.cn/productapi/token",
+            "/devApi": {
+                target: "http://www.web-jshtml.cn/vue_admin_api",
                 changeOrigin: true,
                 pathRewrite: {
                     "^/devApi": ''
