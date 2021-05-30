@@ -1,4 +1,5 @@
 <template>
+    <!-- vue 2 版本 -->
   <div id="login">
     <div class="login_wrap">
       <ul class="menu_tab">
@@ -37,11 +38,7 @@
             maxlength="20"
           ></el-input>
         </el-form-item>
-        <el-form-item
-          prop="rPassword"
-          class="login_form_item"
-          v-show="type === 'register'"
-        >
+        <el-form-item prop="rPassword" class="login_form_item" v-show="type === 'register'">
           <label for="">重复密码</label>
           <el-input
             type="password"
@@ -78,18 +75,12 @@
 </template>
 
 <script>
-import { reactive, ref, isRef, toRefs, onMounted } from "@vue/composition-api";
-import {
-  stripScript,
-  validateEmail,
-  validatePass,
-  validateCode,
-} from "@/utils/validate";
+import { stripScript, validateEmail, validatePass, validateCode } from "@/utils/validate";
 export default {
   name: "Login",
-  setup(props, context) {
+  data() {
     //用户名验证
-    let validateUsername = (rule, value, callback) => {
+    var validateUsername = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请输入用户名"));
       } else if (validateEmail(value)) {
@@ -99,8 +90,8 @@ export default {
       }
     };
     //密码验证
-    let validatePassword = (rule, value, callback) => {
-      ruleForm.password = value = stripScript(value);
+    var validatePassword = (rule, value, callback) => {
+      this.ruleForm.password = value = stripScript(value);
       if (value === "") {
         callback(new Error("请输入密码"));
       } else if (validatePass(value)) {
@@ -110,28 +101,28 @@ export default {
       }
     };
     //重复密码验证
-    let validaterPassword = (rule, value, callback) => {
+    var validaterPassword = (rule, value, callback) => {
       //当为登录状态且是通过v-show控制重复密码输入组件的显示状态时，需要直接让重复密码的校验通过。
       //因为v-show只是改变了display的值，重复密码的组件依旧存在，所以他的校验规则依旧会生效。
       //而通过v-if控制的组件在登录状态时根本没有生成，所以没有校验
       //v-show
-      if (type.value === "login") {
-        callback();
+      if(this.type === 'login'){
+        callback()
       }
       //v-if 指令
       //do nothing
-      ruleForm.rPassword = value = stripScript(value);
+      this.ruleForm.rPassword = value = stripScript(value);
       if (value === "") {
         callback(new Error("请再次输入密码"));
-      } else if (value !== ruleForm.password) {
+      } else if (value !== this.ruleForm.password) {
         callback(new Error("两次输入的密码不一致，请重新输入"));
       } else {
         callback();
       }
     };
     //验证码验证
-    let validateCaptcha = (rule, value, callback) => {
-      ruleForm.captcha = value = stripScript(value);
+    var validateCaptcha = (rule, value, callback) => {
+      this.ruleForm.captcha = value = stripScript(value);
       if (value === "") {
         callback(new Error("请输入验证码"));
       } else if (validateCode(value)) {
@@ -140,36 +131,39 @@ export default {
         callback();
       }
     };
-    const menuTabs = reactive([
-      { txt: "登录", isActive: true, type: "login" },
-      { txt: "注册", isActive: false, type: "register" },
-    ]);
-    const ruleForm = reactive({
-      username: "",
-      password: "",
-      rPassword: "",
-      captcha: "",
-    });
-    const rules = reactive({
-      username: [{ validator: validateUsername, trigger: "blur" }],
-      password: [{ validator: validatePassword, trigger: "blur" }],
-      rPassword: [{ validator: validaterPassword, trigger: "blur" }],
-      captcha: [{ validator: validateCaptcha, trigger: "blur" }],
-    });
-    const type = ref("login");
-    // methods声明
-    const toggleMenu = (item) => {
+    return {
+      type: "login",
+      menuTabs: [
+        { txt: "登录", isActive: true, type: 'login' },
+        { txt: "注册", isActive: false, type: 'register' },
+      ],
+      ruleForm: {
+        username: "",
+        password: "",
+        rPassword: "",
+        captcha: "",
+      },
+      rules: {
+        username: [{ validator: validateUsername, trigger: "blur" }],
+        password: [{ validator: validatePassword, trigger: "blur" }],
+        rPassword: [{ validator: validaterPassword, trigger: "blur" }],
+        captcha: [{ validator: validateCaptcha, trigger: "blur" }],
+      },
+    };
+  },
+  methods: {
+    toggleMenu(item) {
       //清除预设
-      menuTabs.forEach((elem) => {
+      this.menuTabs.forEach((elem) => {
         elem.isActive = false;
       });
       //高光切换
       item.isActive = true;
       //修改类型
-      type.value = item.type;
-    };
-    const submitForm = (formName) => {
-      context.refs[formName].validate((valid) => {
+      this.type = item.type;
+    },
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
         if (valid) {
           alert("submit!");
         } else {
@@ -177,16 +171,7 @@ export default {
           return false;
         }
       });
-    };
-    onMounted(() => {});
-    return {
-      menuTabs,
-      ruleForm,
-      rules,
-      type,
-      toggleMenu,
-      submitForm,
-    };
+    },
   },
 };
 </script>
