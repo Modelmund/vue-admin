@@ -20,8 +20,9 @@
         size="medium"
       >
         <el-form-item prop="username" class="login_form_item">
-          <label for="">邮箱</label>
+          <label for="username">邮箱</label>
           <el-input
+            id="username"
             type="text"
             v-model="ruleForm.username"
             autocomplete="off"
@@ -55,14 +56,15 @@
           <label for="">验证码</label>
           <el-row :gutter="20">
             <el-col :span="16"
-              ><el-input v-model.number="ruleForm.captcha"></el-input>
+              ><el-input v-model="ruleForm.captcha"></el-input>
             </el-col>
             <el-col :span="8"
               ><el-button
                 type="success"
                 style="width: 100%; display: block"
                 @click="getCaptcha()"
-                >获取验证码</el-button
+                :disabled="captchaBtnStatus.status"
+                >{{ captchaBtnStatus.text }}</el-button
               >
             </el-col>
           </el-row>
@@ -72,7 +74,8 @@
             type="primary"
             @click="submitForm('ruleForm')"
             style="width: 100%"
-            >登录</el-button
+            :disabled="loginBtnStatus"
+            >{{ type === "login" ? "登录" : "注册" }}</el-button
           >
         </el-form-item>
       </el-form>
@@ -81,7 +84,7 @@
 </template>
 
 <script>
-import { getSms } from "@/api/login";
+import { getSms, login, register } from "@/api/login";
 import { reactive, ref, isRef, toRefs, onMounted } from "@vue/composition-api";
 import {
   stripScript,
@@ -91,7 +94,7 @@ import {
 } from "@/utils/validate";
 export default {
   name: "Login",
-  setup(props, context) {
+  setup(props, { refs, root }) {
     //用户名验证
     let validateUsername = (rule, value, callback) => {
       if (value === "") {
@@ -148,6 +151,12 @@ export default {
       { txt: "登录", isActive: true, type: "login" },
       { txt: "注册", isActive: false, type: "register" },
     ]);
+    const loginBtnStatus = ref(true);
+    const captchaBtnStatus = reactive({
+      status: false,
+      text: "获取验证码",
+    });
+    const timer = ref(null);
     const ruleForm = reactive({
       username: "",
       password: "",
@@ -161,7 +170,7 @@ export default {
       captcha: [{ validator: validateCaptcha, trigger: "blur" }],
     });
     const type = ref("login");
-    // methods声明
+    //*******************************************************************methods */
     /**
      * 登录注册切换
      */
@@ -174,32 +183,129 @@ export default {
       item.isActive = true;
       //修改类型
       type.value = item.type;
+      //表单重置
+      refs["ruleForm"].resetFields();
     };
     /**
      * 获取验证码
      */
     const getCaptcha = () => {
+      if (ruleForm.username === "") {
+        root.$message.error("邮箱不能为空");
+        return false;
+      }
+      if (validateEmail(ruleForm.username)) {
+        root.$message.error("邮箱格式错误");
+        return false;
+      }
+      captchaBtnStatus.status = true;
+      captchaBtnStatus.text = "发送中";
       let data = {
         username: ruleForm.username,
+        module: type.value,
       };
-      getSms(data);
+      getSms(data)
+        .then((res) => {
+          root.$message({
+            message: res.data.message,
+            type: "success",
+          });
+          loginBtnStatus.value = false;
+          countDown(30);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
+    /**
+     * 倒计时
+     */
+    const countDown = (num) => {
+      if (timer.value) {
+        clearInterval(timer.value);
+      }
+      timer.value = setInterval(() => {
+        num--;
+        if (num === 0) {
+          clearInterval(timer.value);
+          captchaBtnStatus.status = false;
+          captchaBtnStatus.text = "再次获取";
+        } else {
+          captchaBtnStatus.text = `倒计时${num}秒`;
+        }
+      }, 1000);
+    };
+    /**
+     * 登录注册切换时清除倒计时
+     */
+    const clearCountDown = () => {
+      captchaBtnStatus.status = false;
+      captchaBtnStatus.text = "获取验证码";
+      clearInterval(timer.value);
+    };
+    /**
+     * 用户注册
+     */
+    const userRegister = (data) => {
+      register(data)
+        .then((res) => {
+          root.$message({
+            message: res.data.message,
+            type: "success",
+          });
+          toggleMenu(menuTabs[0]);
+          clearCountDown();
+          loginBtnStatus.value = true;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
+    /**
+     * 用户登录
+     */
+    const userLogin = (data) => {
+      login(data)
+        .then((res) => {
+          root.$message({
+            message: res.data.message,
+            type: "success",
+          });
+          loginBtnStatus.value = true;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     };
     /**
      * 表单提交
      */
     const submitForm = (formName) => {
-      context.refs[formName].validate((valid) => {
+      console.log(type.value)
+      refs[formName].validate((valid) => {
         if (valid) {
-          alert("submit!");
+          let data = {
+            username: ruleForm.username,
+            password: ruleForm.password,
+            code: ruleForm.captcha,
+          };
+          if ((type.value === "login")) {
+            userLogin(data);
+          } else {
+            userRegister(data);
+          }
         } else {
           console.log("error submit!!");
           return false;
         }
       });
     };
+    /*********************************************************************lifecycle */
     onMounted(() => {});
     return {
       menuTabs,
+      loginBtnStatus,
+      captchaBtnStatus,
       ruleForm,
       rules,
       type,
