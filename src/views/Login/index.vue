@@ -56,7 +56,11 @@
           <label for="">验证码</label>
           <el-row :gutter="20">
             <el-col :span="16"
-              ><el-input v-model="ruleForm.captcha"></el-input>
+              ><el-input
+                v-model="ruleForm.captcha"
+                minlength="6"
+                maxlength="6"
+              ></el-input>
             </el-col>
             <el-col :span="8"
               ><el-button
@@ -84,6 +88,7 @@
 </template>
 
 <script>
+import sha1 from "js-sha1";
 import { getSms, login, register } from "@/api/login";
 import { reactive, ref, isRef, toRefs, onMounted } from "@vue/composition-api";
 import {
@@ -172,6 +177,12 @@ export default {
     const type = ref("login");
     //*******************************************************************methods */
     /**
+     * 重置表单
+     */
+    const resetForm = (formName) => {
+      refs[formName].resetFields();
+    };
+    /**
      * 登录注册切换
      */
     const toggleMenu = (item) => {
@@ -184,7 +195,15 @@ export default {
       //修改类型
       type.value = item.type;
       //表单重置
-      refs["ruleForm"].resetFields();
+      resetForm("ruleForm");
+      clearCountDown();
+    };
+    /**
+     * 更新验证码按钮状态
+     */
+    const updateCaptchaBtn = (data) => {
+      captchaBtnStatus.status = data.status;
+      captchaBtnStatus.text = data.text;
     };
     /**
      * 获取验证码
@@ -198,8 +217,10 @@ export default {
         root.$message.error("邮箱格式错误");
         return false;
       }
-      captchaBtnStatus.status = true;
-      captchaBtnStatus.text = "发送中";
+      updateCaptchaBtn({
+        status: true,
+        text: "发送中",
+      });
       let data = {
         username: ruleForm.username,
         module: type.value,
@@ -211,7 +232,7 @@ export default {
             type: "success",
           });
           loginBtnStatus.value = false;
-          countDown(30);
+          countDown(60);
         })
         .catch((err) => {
           console.log(err);
@@ -228,10 +249,14 @@ export default {
         num--;
         if (num === 0) {
           clearInterval(timer.value);
-          captchaBtnStatus.status = false;
-          captchaBtnStatus.text = "再次获取";
+          updateCaptchaBtn({
+            status: false,
+            text: "再次获取",
+          });
         } else {
-          captchaBtnStatus.text = `倒计时${num}秒`;
+          updateCaptchaBtn({
+            text: `倒计时${num}秒`,
+          });
         }
       }, 1000);
     };
@@ -254,7 +279,6 @@ export default {
             type: "success",
           });
           toggleMenu(menuTabs[0]);
-          clearCountDown();
           loginBtnStatus.value = true;
         })
         .catch((err) => {
@@ -278,22 +302,18 @@ export default {
         });
     };
     /**
-     * 表单提交
+     * 表单提交 952
      */
     const submitForm = (formName) => {
-      console.log(type.value)
+      console.log(type.value);
       refs[formName].validate((valid) => {
         if (valid) {
           let data = {
             username: ruleForm.username,
-            password: ruleForm.password,
+            password: sha1(ruleForm.password),
             code: ruleForm.captcha,
           };
-          if ((type.value === "login")) {
-            userLogin(data);
-          } else {
-            userRegister(data);
-          }
+          type.value === "login" ? userLogin(data) : userRegister(data);
         } else {
           console.log("error submit!!");
           return false;
