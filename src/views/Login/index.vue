@@ -296,13 +296,16 @@ export default {
             type: "success",
           });
           loginBtnStatus.value = true;
+          root.$router.push({
+            path: 'index'
+          })
         })
         .catch((err) => {
           console.log(err);
         });
     };
     /**
-     * 表单提交 952
+     * 表单提交
      */
     const submitForm = (formName) => {
       console.log(type.value);
