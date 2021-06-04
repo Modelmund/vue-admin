@@ -5,6 +5,8 @@ import store from "./store";
 import ElementUI from "element-ui";
 import VueCompositionApi from "@vue/composition-api"
 import "element-ui/lib/theme-chalk/index.css";
+//引入svg-icon
+import './icons/index'
 Vue.use(VueCompositionApi);
 Vue.use(ElementUI);
 
