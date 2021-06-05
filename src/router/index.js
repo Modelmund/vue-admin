@@ -50,7 +50,7 @@ const routes = [
     name: "Info",
     meta: {
       name: "信息管理",
-      icon: "menu",
+      icon: "info",
     },
     component: Layout,
     children: [

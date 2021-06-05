@@ -1,5 +1,6 @@
 <template>
   <div id="nav_wrap">
+    <h1><img src="../../../assets/logo.png" alt="" /></h1>
     <el-menu
       default-active="1-4-1"
       class="el-menu-vertical-demo"
@@ -15,7 +16,10 @@
         <el-submenu :key="item.id" v-if="!item.hidden" :index="index + ''">
           <!-- 一级菜单 -->
           <template slot="title">
-            <svg-icon :iconClass="item.meta.icon" :className="item.meta.icon"></svg-icon>
+            <svg-icon
+              :iconClass="item.meta.icon"
+              :className="item.meta.icon"
+            ></svg-icon>
             <span slot="title">{{ item.meta.name }}</span>
           </template>
           <!-- 子级菜单 -->
@@ -55,6 +59,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.el-menu {
+  // .el-menu有border-rigth属性，有默认样式。或出现父级菜单和子级菜单宽度相差1px
+  border-right-width: 0;
+}
 #nav_wrap {
   position: fixed;
   left: 0;
@@ -63,8 +71,15 @@ export default {
   height: 100vh;
   background-color: #344a5f;
 }
-svg{
+svg {
   font-size: 20px;
   margin-right: 10px;
 }
-</style>>
+img {
+  width: 90px;
+  height: 90px;
+  margin: auto;
+  padding: 30px 0;
+}
+</style>
+>

@@ -28,7 +28,7 @@ export default {
       if (props.className) {
         return `svg_icon ${props.className}`;
       } else {
-        return `svg-icon`;
+        return `svg_icon`;
       }
     });
     return {
