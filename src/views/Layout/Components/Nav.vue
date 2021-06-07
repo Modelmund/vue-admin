@@ -36,11 +36,13 @@
 </template>
 
 <script>
-import { ref, reactive } from "@vue/composition-api";
+import { ref, reactive, computed } from "@vue/composition-api";
 export default {
   name: "navMenu",
   setup(props, { root }) {
-    const isCollapse = ref(false);
+    const isCollapse = computed(() => {
+      return root.$store.state.isCollapse;
+    });
     const routes = root.$router.options.routes;
     const handleOpen = (key, keyPath) => {
       console.log(key, keyPath);
@@ -70,10 +72,16 @@ export default {
   width: $navMenu;
   height: 100vh;
   background-color: #344a5f;
+  @include webkit(transition, all 0.3s ease 0s);
+}
+.open {
+  #nav_wrap {
+    width: $navMenuMin;
+  }
 }
 svg {
-  font-size: 20px;
-  margin-right: 10px;
+  font-size: 25px;
+  margin-right: 25px;
 }
 img {
   width: 90px;

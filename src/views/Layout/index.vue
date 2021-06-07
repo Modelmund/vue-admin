@@ -1,5 +1,5 @@
 <template>
-  <div id="layout_wrap">
+  <div id="layout_wrap" :class="[homeState ? 'open' : 'close']">
     <LayoutHeader />
     <LayoutNav />
     <LayoutMain />
@@ -10,9 +10,16 @@
 import LayoutHeader from "./Components/Header.vue";
 import LayoutNav from "./Components/Nav.vue";
 import LayoutMain from "./Components/Main.vue";
+import { computed } from "@vue/composition-api";
 export default {
   name: "Index",
-  components: {LayoutHeader, LayoutNav, LayoutMain},
+  components: { LayoutHeader, LayoutNav, LayoutMain },
+  setup(props, { root }) {
+    const homeState = computed(() => root.$store.state.isCollapse);
+    return {
+      homeState,
+    };
+  },
 };
 </script>
 
